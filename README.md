@@ -24,11 +24,15 @@ All of the commands in this section need to be **executed on the Dokku host mach
 
 **PostgreSQL**
 
-`dokku plugin:install https://github.com/dokku/dokku-postgres.git`
+```shell
+dokku plugin:install https://github.com/dokku/dokku-postgres.git
+```
 
 **Let's Encrypt**
 
-`dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git`
+```shell
+dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+```
 
 ## Create and Configure Keycloak App
 
@@ -39,38 +43,54 @@ All of the commands in this section need to be **executed on the Dokku host mach
 
 **Create App**
 
-`dokku apps:create keycloak`
+```shell
+dokku apps:create keycloak
+```
 
 **Create PostgreSQL Database**
 
-`dokku postgres:create keycloakdb`
+```shell
+dokku postgres:create keycloakdb
+```
 
 **Link Database to App**
 
-`dokku postgres:link keycloakdb keycloak`
+```
+dokku postgres:link keycloakdb keycloak
+```
 
 **Set Keycloak Admin Credentials**
 
 Provide a strong password for the Keycloak admin account.
 
-`dokku config:set --no-restart keycloak KEYCLOAK_USER=admin KEYCLOAK_PASSWORD=strongpassword`
+```shell
+dokku config:set --no-restart keycloak KEYCLOAK_USER=admin KEYCLOAK_PASSWORD=strongpassword
+```
 
 **Enable Keycloak Proxy Forwarding**
 
 Enable [proxy forwarding in order for Keycloak](https://stackoverflow.com/questions/44624844/configure-reverse-proxy-for-keycloak-docker-with-custom-base-url#44627360) to work correctly behind the [Nginx reverse proxy](https://dokku.com/docs~v0.24.7/configuration/nginx/).
 
-`dokku config:set --no-restart keycloak PROXY_ADDRESS_FORWARDING=true`
+```shell
+dokku config:set --no-restart keycloak PROXY_ADDRESS_FORWARDING=true
+```
 
 **Configure Keycloak Hostname**
 
 The hostname must match the name of the Dokku vhost app and domain name!
 
-`dokku config:set --no-restart keycloak KEYCLOAK_HOSTNAME=keycloak.example.com`
+```shell
+dokku config:set --no-restart keycloak KEYCLOAK_HOSTNAME=keycloak.example.com
+dokku domains:add keycloak keycloak.example.com
+```
+> Note: you may want to remove the default dokku vhost for this app - run `dokku domains:report keycloak` to see all registered and `dokku domains:remove keycloak vhost.example.com` to remove it.
 
 **Configure Keycloak Port and Proxy Map**
 
-`dokku config:set --no-restart keycloak KEYCLOAK_HTTP_PORT=80`
-`dokku proxy:ports-add keycloak http:80:80`
+```shell
+dokku config:set --no-restart keycloak KEYCLOAK_HTTP_PORT=80
+dokku proxy:ports-add keycloak http:80:80
+```
 
 ## Deploy Keycloak and Verify
 
@@ -81,19 +101,27 @@ All of the commands in this section need to be **executed on your local machine*
 
 **Clone "keycloak-dokku" Repo**
 
-`git clone https://github.com/davidpodhola/keycloak-dokku.git && cd keycloak-dokku`
+```shell
+git clone https://github.com/cowofevil/keycloak-dokku.git
+cd keycloak-dokku
+git checkout -b refactor origin/refactor
+```
 
 **Add Git Remote to Dokku App**
 
 You can name the remote anything like, but we'll be using "dokku" to keep things simple.
 
-`git remote add dokku dokku@example.com:keycloak`
+```shell
+git remote add dokku dokku@example.com:keycloak
+```
 
 **Deploy "keycloak-dokku"**
 
 Deployment can take a while the first time.
 
-`git push dokku master`
+```shell
+git push dokku refactor:master
+```
 
 **Verify Deployment**
 
@@ -101,7 +129,9 @@ Keycloak is a JBoss Java app which means it has a long startup time. You may nee
 as 5 minutes for the service to be ready. Execute the following command on the **on the Dokku host machine**
 to check progress.
 
-`dokku logs -t keycloak`
+```shell
+dokku logs -t keycloak
+```
 
 Once the Keycloak deployment has completed, verify that the service is accessible by navigating to
 `http://keycloak.example.com/auth/admin` in your browser. **DO NOT LOGIN! THIS IS AN UNSAFE HTTP
@@ -111,9 +141,10 @@ CONNECTION!** Just verify that the login screen is accessible.
 
 All of the commands in this section need to be **executed on the Dokku host machine**!
 
-`dokku config:set --no-restart keycloak DOKKU_LETSENCRYPT_EMAIL=user@example.com`
-`dokku letsencrypt:enable keycloak`
-
+```shell
+dokku config:set --no-restart keycloak DOKKU_LETSENCRYPT_EMAIL=user@example.com
+dokku letsencrypt:enable keycloak
+```
 
 ## Login to Keycloak!
 
